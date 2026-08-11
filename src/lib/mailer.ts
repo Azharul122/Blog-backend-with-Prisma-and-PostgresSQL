@@ -7,3 +7,5 @@ export const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_APP_PASSWORD,
   },
 });
+
+
