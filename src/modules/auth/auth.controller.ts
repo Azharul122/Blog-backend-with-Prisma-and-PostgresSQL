@@ -295,11 +295,6 @@ const changePassword = async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Email is required" });
   }
 
-  const otpPaylaod: sendOtpTypePayload = {
-    email,
-    type: "CHANGE_PASSWORD",
-  };
-
   try {
     const result = await authService.sendOtp({
       email,
@@ -308,6 +303,17 @@ const changePassword = async (req: Request, res: Response) => {
     res
       .status(200)
       .json({ message: "OTP sent successfully", success: true, result });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+//  get all users
+
+const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await prisma.user.findMany();
+    res.status(200).json({ users });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
