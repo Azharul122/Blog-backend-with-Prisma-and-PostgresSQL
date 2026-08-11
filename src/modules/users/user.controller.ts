@@ -14,6 +14,27 @@ const getAllUsers = async (req: Request, res: Response) => {
   }
 };
 
+const getUserById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.query;
+
+    if (!id || typeof id !== "string") {
+      return res
+        .status(400)
+        .json({ error: "Valid id query param is required" });
+    }
+    const user = await userService.getUserById(id as string);
+    res.status(200).json({
+      success: true,
+      message: "Single user fetched successfully",
+      data: user,
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const userController = {
-    getAllUsers
+  getAllUsers,
+  getUserById,
 };
