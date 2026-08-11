@@ -20,7 +20,7 @@ model User {
   emailVerified Boolean   @default(false)
   otp           String?
   otpExpiresAt  DateTime?
-
+  
   // replies   Reply[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

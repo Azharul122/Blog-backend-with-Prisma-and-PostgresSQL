@@ -10,5 +10,7 @@ router.post("/logout", authController.logout);
 router.post("/forgot-password", authController.forgotPassword);
 router.post("/reset-password", authController.resetPassword);
 router.put("/resend-otp", authController.resendOtp);
+router.put("/change-password-verify", authController.changePasswordVerify);
+router.put("/change-password", authController.changePassword);
 
 export const authRouter: Router = router;

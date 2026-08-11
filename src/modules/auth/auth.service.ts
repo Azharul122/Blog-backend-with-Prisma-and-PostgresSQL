@@ -2,8 +2,9 @@ import { prisma } from "../../../lib/prisma";
 import { transporter } from "../../lib/mailer";
 import getOtpEmailTemplate from "../../templetes/OtpTemplete";
 import generateOtp from "../../utils/generateOtp";
+import jwt from "jsonwebtoken";
 
-
+import { sendOtpTypePayload } from "../../../types/auth";
 
 const register = async (data: {
   email: string;
@@ -57,7 +58,7 @@ const verifyPassword = async (
 };
 
 // ......................... Send OTP ...............................
-const sendOtp = async (email: string) => {
+const sendOtp = async ({ email, type }: sendOtpTypePayload) => {
   const otp = generateOtp();
   const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
@@ -70,7 +71,7 @@ const sendOtp = async (email: string) => {
     from: process.env.SMTP_EMAIL,
     to: email,
     subject: "Your OTP Code",
-    html: getOtpEmailTemplate(otp),
+    html: getOtpEmailTemplate(otp, 5, type),
   });
 
   return otp;
@@ -116,7 +117,7 @@ const comparePassword = async (password: string, hashedPassword: string) => {
 };
 
 // ......................... Resend OTP ...............................
-const resendOtp = async (email: string) => {
+const resendOtp = async ({ email, type }: sendOtpTypePayload) => {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
@@ -132,7 +133,6 @@ const resendOtp = async (email: string) => {
     user.otpExpiresAt &&
     user.otpExpiresAt > new Date(Date.now() - 4 * 60 * 1000)
   ) {
-    // Ager OTP still valid mane last 1 min-er modhye pathano hoyeche (5 min expiry - 4 min = 1 min gap)
     const secondsLeft = Math.ceil(
       (user.otpExpiresAt.getTime() - 5 * 60 * 1000 + 60 * 1000 - Date.now()) /
         1000,
@@ -144,7 +144,7 @@ const resendOtp = async (email: string) => {
     }
   }
 
-  await sendOtp(email); // existing sendOtp function reuse
+  await sendOtp({ email, type });
   return true;
 };
 
@@ -153,8 +153,6 @@ const forgotPassword = async (email: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
-    // Security best practice: email exist na korleo same message dekhano uchit,
-    // eta user enumeration attack thamay. Kintu ekhon simplicity-r jonno explicit error dilam.
     throw new Error("No account found with this email");
   }
 
@@ -170,7 +168,7 @@ const forgotPassword = async (email: string) => {
     from: process.env.SMTP_EMAIL,
     to: email,
     subject: "Password Reset OTP",
-    html: `<p>Your password reset OTP is <b>${otp}</b>. It expires in 5 minutes. If you didn't request this, ignore this email.</p>`,
+    html: getOtpEmailTemplate(otp, 5, "RESET_PASSWORD"),
   });
 
   return true;
@@ -214,6 +212,57 @@ const resetPassword = async (data: {
   return true;
 };
 
+// ......................... Change Password ...............................
+const changePassword = async (data: {
+  email: string;
+  oldPassword: string;
+  newPassword: string;
+}) => {
+  const user = await prisma.user.findUnique({ where: { email: data.email } });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const isMatch = await comparePassword(data.oldPassword, user.password);
+  if (!isMatch) {
+    throw new Error("Old password is incorrect");
+  }
+
+  if (data.oldPassword === data.newPassword) {
+    throw new Error("New password must be different from old password");
+  }
+
+  const hashedPassword = await hashPassword(data.newPassword);
+
+  await prisma.user.update({
+    where: { email: data.email },
+    data: { password: hashedPassword },
+  });
+
+  return true;
+};
+
+// .......................... Generate Token ...............................
+const generateToken = async (
+  password: string,
+  email: string,
+  role: string,
+  id: string,
+  name: string,
+) => {
+  const token = jwt.sign(
+    { password, email, role, id, name },
+    `${process.env.JWT_SECRET}`,
+    {
+      expiresIn: "1d",
+    },
+  );
+  return token;
+};
+
+// .......................... Export ...............................
+
 export const authService = {
   register,
   login,
@@ -225,4 +274,6 @@ export const authService = {
   resendOtp,
   forgotPassword,
   resetPassword,
+  changePassword,
+  generateToken,
 };

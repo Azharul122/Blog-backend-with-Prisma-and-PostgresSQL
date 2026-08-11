@@ -1,8 +1,7 @@
 export const getOtpEmailTemplate = (
   otp: string,
   expiryMinutes: number = 5,
-  title: string = "Your OTP Code",
-  description: string = "Your OTP code is",
+  type: "CHANGE_PASSWORD" | "RESET_PASSWORD" | "REGISTER" = "CHANGE_PASSWORD",
 ) => {
   return `
 <!DOCTYPE html>
@@ -20,7 +19,7 @@ export const getOtpEmailTemplate = (
           <!-- Header -->
           <tr>
             <td style="background-color:#4f46e5; padding: 32px 40px; text-align:center;">
-              <h1 style="margin:0; color:#ffffff; font-size:22px; font-weight:600;">${title}</h1>
+              <h1 style="margin:0; color:#ffffff; font-size:22px; font-weight:600;">${type === "CHANGE_PASSWORD" ? "Change Password Verification OTP" : type === "REGISTER" ? "Verify Email OTP" : "Forgot Password OTP"} </h1>
             </td>
           </tr>
 
