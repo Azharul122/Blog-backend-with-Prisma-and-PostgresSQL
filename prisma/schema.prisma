@@ -8,62 +8,144 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  name      String?
-  profile   Profile?
-  posts     Post[]
-  comments  Comment[]
-  reviews   Review[]
+  id       String    @id @default(uuid())
+  email    String    @unique
+  name     String?
+  profile  Profile?
+  posts    Post[]
+  role     Role      @default(USER)
+  comments Comment[]
+  reviews  Review[]
+
+  // replies   Reply[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 }
 
 model Profile {
-  id             String    @id @default(cuid())
+  id             String         @id @default(uuid())
   bio            String?
-  user           User      @relation(fields: [userId], references: [id])
-  userId         String    @unique
+  phone          String?
+  website        String?
+  dateOfBirth    DateTime?
+  address        String?
+  bloodGroup     BloodGroup?
+  gender         Gender?
+  maritalStatus  MaritalStatus?
+  about          String?
+  user           User           @relation(fields: [userId], references: [id])
+  userId         String         @unique
   coverPhoto     String?
   profilePicture String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   deletedAt      DateTime?
+
+  @@index([userId])
+  @@map("profiles")
+}
+
+enum BloodGroup {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
 }
 
 model Post {
-  id         String     @id @default(cuid())
+  id         String      @id @default(uuid())
   title      String
   content    String?
-  published  Boolean    @default(false)
-  author     User       @relation(fields: [authorId], references: [id])
+  published  Boolean     @default(false)
+  author     User        @relation(fields: [authorId], references: [id])
   authorId   String
   image      String?
+  isFeatured Boolean     @default(false)
   video      String?
   comments   Comment[]
   categories Category[]
   tags       Tag[]
   reviews    Review[]
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
   deletedAt  DateTime?
+  status     postStatus?
+
+  @@index([authorId])
+  @@map("posts")
+}
+
+model postStatus {
+  id        String     @id @default(uuid())
+  status    PostStatus @default(DRAFT)
+  post      Post       @relation(fields: [postId], references: [id])
+  postId    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+
+  @@index([postId])
+  @@map("post_statuses")
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }
 
 model Comment {
-  id        String    @id @default(cuid())
+  id        String         @id @default(uuid())
   content   String
-  post      Post      @relation(fields: [postId], references: [id])
+  post      Post           @relation(fields: [postId], references: [id])
   postId    String
-  author    User      @relation(fields: [authorId], references: [id])
+  author    User           @relation(fields: [authorId], references: [id])
   authorId  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  parentId  String?
+  parent    Comment?       @relation("CommentReplies", fields: [parentId], references: [id]) // Self-relation for replies
+  replies   Comment[]      @relation("CommentReplies")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
   deletedAt DateTime?
+  // replies   Reply[]
+  status    commentStatus?
+
+  @@index([postId, authorId])
+  @@map("comments")
+}
+
+enum commentStatus {
+  VISIBLE
+  HIDDEN
+  DELETED
 }
 
 model Category {
-  id        String    @id @default(cuid())
+  id        String    @id @default(uuid())
   name      String    @unique
   posts     Post[]
   createdAt DateTime  @default(now())
@@ -72,7 +154,7 @@ model Category {
 }
 
 model Tag {
-  id        String    @id @default(cuid())
+  id        String    @id @default(uuid())
   name      String    @unique
   posts     Post[]
   createdAt DateTime  @default(now())
@@ -81,7 +163,7 @@ model Tag {
 }
 
 model Review {
-  id         String    @id @default(cuid())
+  id         String    @id @default(uuid())
   rating     Int
   comment    String?
   post       Post      @relation(fields: [postId], references: [id])
@@ -91,11 +173,14 @@ model Review {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   deletedAt  DateTime?
+
+  @@index([postId, reviewerId])
+  @@map("reviews")
 }
 
 model TrashedItem {
-  id        String    @id @default(cuid())
+  id        String   @id @default(uuid())
   itemId    String
   itemType  String
-  deletedAt DateTime  @default(now())
+  deletedAt DateTime @default(now())
 }
