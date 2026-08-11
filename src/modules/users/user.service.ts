@@ -19,12 +19,18 @@ const getAllUsers = async () => {
 };
 
 const getUserById = async (id: string) => {
-    console.log(id);
+  console.log(id);
+  const user = await prisma.user.findUnique({ where: { id } });
+  return user;
+};
+
+const getMe = async (id: string) => {
   const user = await prisma.user.findUnique({ where: { id } });
   return user;
 };
 
 export const userService = {
   getAllUsers,
-  getUserById
+  getUserById,
+  getMe,
 };

@@ -308,16 +308,6 @@ const changePassword = async (req: Request, res: Response) => {
   }
 };
 
-//  get all users
-
-const getAllUsers = async (req: Request, res: Response) => {
-  try {
-    const users = await prisma.user.findMany();
-    res.status(200).json({ users });
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
-  }
-};
 
 export const authController = {
   login,
