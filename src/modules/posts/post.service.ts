@@ -1,0 +1,29 @@
+import { prisma } from "../../../lib/prisma";
+
+const createPost = async (data: any) => {
+  console.log(data);
+  if (!data.authorId) {
+    throw new Error("Author ID is required to create a post.");
+  }
+
+  if (!data.title || !data.content) {
+    throw new Error("Title and content are required to create a post.");
+  }
+
+  const postData: any = {
+    title: data.title,
+    content: data.content,
+    authorId: data.authorId,
+    tags: data.tags || [],
+  };
+
+  const post = await prisma.post.create({
+    data: postData,
+  });
+
+  return post;
+};
+
+export const postService = {
+  createPost,
+};
