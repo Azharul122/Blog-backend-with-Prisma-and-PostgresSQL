@@ -49,23 +49,8 @@ const forgotPassword = async (req: Request, res: Response) => {
 
     await authService.forgotPassword(email);
 
-    const user = await prisma.user.findUnique({ where: { email } });
-
-    if (!user) {
-      return res.status(400).json({ error: "User not found" });
-    }
-
-    const generateToken = await authService.generateToken(
-      user.password,
-      user.email,
-      user.role,
-      user.id,
-      user.name as string,
-    );
-
     res.status(200).json({
       message: "Password reset OTP sent to your email",
-      token: generateToken,
       success: true,
     });
   } catch (error: any) {
@@ -92,9 +77,25 @@ const resetPassword = async (req: Request, res: Response) => {
 
     await authService.resetPassword({ email, otp, newPassword });
 
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
+    const generateToken = await authService.generateToken(
+      user.password,
+      user.email,
+      user.role,
+      user.id,
+      user.name as string,
+    );
+
     res.status(200).json({
+      success: true,
       message:
         "Password reset successful. Please login with your new password.",
+      token: generateToken,
     });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
@@ -141,7 +142,7 @@ const login = async (req: Request, res: Response) => {
     const resData = { ...user, token: generatedToken };
     res
       .status(200)
-      .json({ success: true, message: "Login successful", data:resData });
+      .json({ success: true, message: "Login successful", data: resData });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
