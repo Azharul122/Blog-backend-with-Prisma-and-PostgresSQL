@@ -1,5 +1,6 @@
 import { prisma } from "../../../lib/prisma";
 import { transporter } from "../../lib/mailer";
+import getOtpEmailTemplate from "../../templetes/OtpTemplete";
 import generateOtp from "../../utils/generateOtp";
 
 
@@ -69,7 +70,7 @@ const sendOtp = async (email: string) => {
     from: process.env.SMTP_EMAIL,
     to: email,
     subject: "Your OTP Code",
-    html: `<p>Your OTP is <b>${otp}</b>. It expires in 5 minutes.</p>`,
+    html: getOtpEmailTemplate(otp),
   });
 
   return otp;
