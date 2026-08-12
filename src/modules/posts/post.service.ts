@@ -3,7 +3,6 @@ import generateSlug from "../../utils/generateSlag";
 import { PostFilters } from "../../../types/post";
 
 const createPost = async (data: any) => {
-  console.log(data);
   if (!data.authorId) {
     throw new Error("Author ID is required to create a post.");
   }
@@ -11,6 +10,20 @@ const createPost = async (data: any) => {
   if (!data.title || !data.content) {
     throw new Error("Title and content are required to create a post.");
   }
+
+  // post under category
+
+  const categoryIds = data?.categories || [];
+
+  // const categories = await prisma.category.findMany({
+  //   where: {
+  //     id: {
+  //       in: categoryIds,
+  //     },
+  //   },
+  // });
+
+  // const categoryNames = categories.map((category) => category.name);
 
   const slug = generateSlug(data.title);
 
@@ -26,10 +39,18 @@ const createPost = async (data: any) => {
     authorId: data.authorId,
     tags: data.tags || [],
     slug: slug,
+    categories: {
+      connect: categoryIds.map((id: string) => ({
+        id,
+      })),
+    },
   };
 
   const post = await prisma.post.create({
     data: postData,
+    include: {
+      categories: true,
+    },
   });
 
   return post;
@@ -40,9 +61,8 @@ const createPost = async (data: any) => {
 const getAllPosts = async (filters: PostFilters) => {
   const { category, tag, sort, search, published } = filters;
 
-
   const where: any = {
-    deletedAt: null, 
+    deletedAt: null,
   };
 
   if (published !== undefined) {
@@ -59,7 +79,7 @@ const getAllPosts = async (filters: PostFilters) => {
 
   if (tag && tag.length > 0) {
     where.tags = {
-      hasSome: tag, 
+      hasSome: tag,
     };
   }
 
@@ -69,7 +89,6 @@ const getAllPosts = async (filters: PostFilters) => {
       { content: { contains: search, mode: "insensitive" } },
     ];
   }
-
 
   const orderBy: any[] = [];
 
@@ -86,7 +105,6 @@ const getAllPosts = async (filters: PostFilters) => {
     orderBy.push({ createdAt: "desc" }); // default sort
   }
 
- 
   const posts = await prisma.post.findMany({
     where,
     orderBy,

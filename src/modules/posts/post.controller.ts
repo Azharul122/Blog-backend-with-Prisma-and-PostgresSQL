@@ -6,6 +6,7 @@ const createPost = async (req: Request, res: Response) => {
   console.log("Request body:", req.body);
   try {
     const result = await postService.createPost(req.body);
+
     res.status(201).json({
       message: "Post created successfully",
       success: true,

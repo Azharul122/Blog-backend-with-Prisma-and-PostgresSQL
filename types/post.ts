@@ -1,3 +1,11 @@
+export interface Category {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 export interface PostFilters {
   category?: string[];
   tag?: string[];
@@ -5,5 +13,3 @@ export interface PostFilters {
   search?: string;
   published?: boolean;
 }
-
-

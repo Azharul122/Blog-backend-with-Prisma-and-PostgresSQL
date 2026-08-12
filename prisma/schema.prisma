@@ -20,7 +20,6 @@ model User {
   emailVerified Boolean   @default(false)
   otp           String?
   otpExpiresAt  DateTime?
-  // replies   Reply[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
@@ -135,7 +134,6 @@ model Comment {
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   deletedAt DateTime?
-  // replies   Reply[]
   status    commentStatus?
 
   @@index([postId, authorId])
@@ -151,16 +149,15 @@ enum commentStatus {
 model Category {
   id        String    @id @default(uuid())
   name      String    @unique
-  posts     Post[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  posts     Post[]
   deletedAt DateTime?
 }
 
 model Tag {
   id        String    @id @default(uuid())
   name      String    @unique
-  // posts     Post[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
