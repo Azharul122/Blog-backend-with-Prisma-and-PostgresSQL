@@ -42,9 +42,28 @@ const getAllPosts = async () => {
 };
 
 // .......................... Single Post ...............................
-
 const getPostById = async (id: string) => {
   const post = await prisma.post.findUnique({ where: { id } });
+  return post;
+};
+
+//  .......................... Update Post ...............................
+const updatePost = async (id: string, data: any) => {
+  const updateSlug = generateSlug(data.title);
+  const post = await prisma.post.update({
+    where: { id },
+    data: { ...data, slug: updateSlug },
+  });
+  return post;
+};
+
+//  .......................... Delete Post ...............................
+const deletePost = async (id: string) => {
+  // soft delete
+  const post = await prisma.post.update({
+    where: { id },
+    data: { isDeleted: true },
+  });
   return post;
 };
 
@@ -52,4 +71,6 @@ export const postService = {
   createPost,
   getAllPosts,
   getPostById,
+  updatePost,
+  deletePost,
 };

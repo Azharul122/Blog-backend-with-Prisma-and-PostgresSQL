@@ -1,12 +1,12 @@
 import dotenv from "dotenv";
 
-import cookieParser from "cookie-parser";
+
 
 import { prisma } from "../lib/prisma";
 import app from "./app";
 dotenv.config();
 async function main() {
-  app.use(cookieParser());
+  
   try {
     await prisma.$connect();
     console.log("Connected to the database");

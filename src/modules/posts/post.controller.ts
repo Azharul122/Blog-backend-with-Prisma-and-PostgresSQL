@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../../../lib/prisma";
 import { postService } from "./post.service";
+import { getUserFromToken } from "../../utils/getUserFromToken";
 
 interface CreatePostPayload {
   title: string;
@@ -58,8 +59,81 @@ const getPostById = async (req: Request, res: Response) => {
   }
 };
 
+//  .......................... Update Post ...............................
+const updatePost = async (req: Request, res: Response) => {
+  // check his own post or not
+  const user = getUserFromToken(req.cookies.token as string, req);
+
+  if (!user) {
+    return res.status(401).json({ error: "User not authenticated" });
+  }
+
+  const post = await postService.getPostById(req.params.id as string);
+  if (!post) {
+    return res.status(404).json({ error: "Post not found" });
+  }
+
+  if (post.authorId !== user.id) {
+    return res
+      .status(401)
+      .json({ error: "You are not authorized to update this post" });
+  }
+  try {
+    const result = await postService.updatePost(
+      req.params.id as string,
+      req.body,
+    );
+    res.status(200).json({
+      message: "Post updated successfully",
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+//  .......................... Delete Post ...............................
+const deletePost = async (req: Request, res: Response) => {
+  try {
+    const user = getUserFromToken(req.headers.authorization as string, req);
+
+    if (!user) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    if (user.role !== "ADMIN") {
+      return res
+        .status(401)
+        .json({ error: "You are not authorized to delete this post" });
+    }
+
+    const post = await postService.getPostById(req.params.id as string);
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    if (post.authorId !== user.id) {
+      return res
+        .status(401)
+        .json({ error: "You are not authorized to delete this post" });
+    }
+
+    const result = await postService.deletePost(req.params.id as string);
+    res.status(200).json({
+      message: "Post deleted successfully",
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const postController = {
   createPost,
   getAllPosts,
   getPostById,
+  updatePost,
+  deletePost,
 };
