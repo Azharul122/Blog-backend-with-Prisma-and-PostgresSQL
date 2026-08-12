@@ -3,6 +3,7 @@ import { authService } from "./auth.service";
 import { prisma } from "../../../lib/prisma";
 import { sendOtpTypePayload } from "../../../types/auth";
 import jwt from "jsonwebtoken";
+import { tokenSaveToCookie } from "../../utils/tokenSaveToCookie";
 
 const register = async (req: Request, res: Response) => {
   try {
@@ -91,6 +92,8 @@ const resetPassword = async (req: Request, res: Response) => {
       user.name as string,
     );
 
+    tokenSaveToCookie(res, generateToken);
+
     res.status(200).json({
       success: true,
       message:
@@ -139,6 +142,7 @@ const login = async (req: Request, res: Response) => {
       userByMail.name as string,
     );
 
+    tokenSaveToCookie(res, generatedToken);
     const resData = { ...user, token: generatedToken };
     res
       .status(200)
@@ -278,6 +282,9 @@ const changePasswordVerify = async (req: Request, res: Response) => {
       user.name as string,
     );
 
+    // save token in authorization header
+    tokenSaveToCookie(res, generatedToken);
+
     res.status(200).json({
       message: "Password changed successfully",
       token: generatedToken,
@@ -307,7 +314,6 @@ const changePassword = async (req: Request, res: Response) => {
     res.status(400).json({ error: error.message });
   }
 };
-
 
 export const authController = {
   login,

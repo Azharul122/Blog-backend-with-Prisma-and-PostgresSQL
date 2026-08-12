@@ -42,8 +42,6 @@ const getMe = async (req: Request, res: Response) => {
     ? JSON.parse(Buffer.from(token.split(".")[1], "base64").toString("ascii"))
     : null;
 
-    console.log(decodedUserData);
-
   const userId = decodedUserData?.id;
 
   if (!userId) {

@@ -277,6 +277,8 @@ const getAllUsers = async () => {
     orderBy: { createdAt: "desc" },
   });
 
+  
+
   return users;
 };
 
