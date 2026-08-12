@@ -180,6 +180,8 @@ const verifyOtp = async (req: Request, res: Response) => {
 
     const user = await authService.verifyOtp(email, otp);
 
+    tokenSaveToCookie(res, generateTeoken);
+
     res.status(200).json({
       message: `${type === "REGISTER" ? "Email varified" : type === "RESET_PASSWORD" ? "Password reset" : "Verified"} successfully`,
       user:

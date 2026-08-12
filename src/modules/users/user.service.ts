@@ -1,4 +1,5 @@
 import { prisma } from "../../../lib/prisma";
+import { getUserFromToken } from "../../utils/getUserFromToken";
 
 const getAllUsers = async () => {
   const users = await prisma.user.findMany({
@@ -11,7 +12,9 @@ const getAllUsers = async () => {
       emailVerified: true,
       createdAt: true,
       updatedAt: true,
+      profile: true,
     },
+
     orderBy: { createdAt: "desc" },
   });
 
@@ -25,12 +28,47 @@ const getUserById = async (id: string) => {
 };
 
 const getMe = async (id: string) => {
-  const user = await prisma.user.findUnique({ where: { id } });
+  const user = await prisma.user.findUnique({
+    where: { id },
+    include: { profile: true },
+  });
   return user;
+};
+
+// .......................... Create or update profile ...............................
+
+const upsertProfile = async (
+  userId: string,
+  data: {
+    bio?: string;
+    address?: string;
+    bloodGroup?: string;
+    phone?: string;
+  },
+) => {
+  const result = await prisma.profile.upsert({
+    where: { userId },
+    update: {
+      bio: data.bio,
+      address: data.address,
+      bloodGroup: data.bloodGroup as any, 
+      phone: data.phone,
+    },
+    create: {
+      userId,
+      bio: data.bio,
+      address: data.address,
+      bloodGroup: data.bloodGroup as any,
+      phone: data.phone,
+    },
+  });
+
+  return result;
 };
 
 export const userService = {
   getAllUsers,
   getUserById,
   getMe,
+  upsertProfile,
 };
