@@ -34,14 +34,22 @@ const createPost = async (data: any) => {
   return post;
 };
 
-// .......................... Create Post ...............................
+// .......................... All Posts ...............................
 
 const getAllPosts = async () => {
   const posts = await prisma.post.findMany({ include: { author: true } });
   return posts;
 };
 
+// .......................... Single Post ...............................
+
+const getPostById = async (id: string) => {
+  const post = await prisma.post.findUnique({ where: { id } });
+  return post;
+};
+
 export const postService = {
   createPost,
   getAllPosts,
+  getPostById,
 };
