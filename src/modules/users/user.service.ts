@@ -1,4 +1,5 @@
 import { prisma } from "../../../lib/prisma";
+import { userEditableFields } from "../../../types/auth";
 import { getUserFromToken } from "../../utils/getUserFromToken";
 
 const getAllUsers = async () => {
@@ -37,30 +38,29 @@ const getMe = async (id: string) => {
 
 // .......................... Create or update profile ...............................
 
-const upsertProfile = async (
-  userId: string,
-  data: {
-    bio?: string;
-    address?: string;
-    bloodGroup?: string;
-    phone?: string;
-  },
-) => {
-  const result = await prisma.profile.upsert({
-    where: { userId },
-    update: {
-      bio: data.bio,
-      address: data.address,
-      bloodGroup: data.bloodGroup as any, 
-      phone: data.phone,
-    },
-    create: {
-      userId,
-      bio: data.bio,
-      address: data.address,
-      bloodGroup: data.bloodGroup as any,
-      phone: data.phone,
-    },
+const upsertProfile = async (userId: string, body: userEditableFields) => {
+  const { name, ...profileFields } = body;
+
+  const result = await prisma.$transaction(async (tx) => {
+    let updatedUser = null;
+    let updatedProfile = null;
+
+    if (name !== undefined) {
+      updatedUser = await tx.user.update({
+        where: { id: userId },
+        data: { name },
+      });
+    }
+
+    if (Object.keys(profileFields).length > 0) {
+      updatedProfile = await tx.profile.upsert({
+        where: { userId },
+        update: profileFields,
+        create: { userId, ...profileFields },
+      });
+    }
+
+    return { user: updatedUser, profile: updatedProfile };
   });
 
   return result;

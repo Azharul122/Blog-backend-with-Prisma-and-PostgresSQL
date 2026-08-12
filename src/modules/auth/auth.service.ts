@@ -218,7 +218,10 @@ const changePassword = async (data: {
   oldPassword: string;
   newPassword: string;
 }) => {
-  const user = await prisma.user.findUnique({ where: { email: data.email } });
+  const user = await prisma.user.findUnique({
+    where: { email: data.email },
+    omit: { password: false },
+  });
 
   if (!user) {
     throw new Error("User not found");

@@ -78,7 +78,10 @@ const resetPassword = async (req: Request, res: Response) => {
 
     await authService.resetPassword({ email, otp, newPassword });
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({
+      where: { email },
+      omit: { password: false },
+    });
 
     if (!user) {
       return res.status(400).json({ error: "User not found" });
@@ -114,7 +117,10 @@ const login = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const userExists = await prisma.user.findUnique({ where: { email } });
+    const userExists = await prisma.user.findUnique({
+      where: { email },
+      omit: { password: false },
+    });
     if (!userExists) {
       return res.status(401).json({ error: "User not found" });
     }
@@ -129,7 +135,10 @@ const login = async (req: Request, res: Response) => {
 
     const user = await authService.login({ email, password });
 
-    const userByMail = await prisma.user.findUnique({ where: { email } });
+    const userByMail = await prisma.user.findUnique({
+      where: { email },
+      omit: { password: false },
+    });
     if (!userByMail) {
       return res.status(400).json({ error: "User not found" });
     }
@@ -161,7 +170,10 @@ const verifyOtp = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Email and OTP are required" });
     }
 
-    const userByMail = await prisma.user.findUnique({ where: { email } });
+    const userByMail = await prisma.user.findUnique({
+      where: { email },
+      omit: { password: false },
+    });
     if (!userByMail) {
       return res.status(400).json({ error: "User not found" });
     }

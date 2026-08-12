@@ -44,16 +44,7 @@ const updateProfile = async (req: Request, res: Response) => {
   }
 
   try {
-    const { bio, address, bloodGroup, phone } = req.body;
-
-    console.log(req.body);
-
-    const result = await userService.upsertProfile(user.id, {
-      bio,
-      address,
-      bloodGroup,
-      phone,
-    });
+    const result = await userService.upsertProfile(user.id, req.body);
 
     res.status(200).json({
       message: "Profile updated successfully",
