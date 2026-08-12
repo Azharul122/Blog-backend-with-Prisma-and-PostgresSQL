@@ -62,9 +62,16 @@ const deletePost = async (id: string) => {
   // soft delete
   const post = await prisma.post.update({
     where: { id },
-    data: { isDeleted: true },
+    data: { deletedAt: new Date() as any },
   });
-  return post;
+
+  // if already deleted then throw error
+
+  // if (post.deletedAt) {
+  //   throw new Error("Post already deleted");
+  // }
+
+  return { daletedAt: post.deletedAt };
 };
 
 export const postService = {

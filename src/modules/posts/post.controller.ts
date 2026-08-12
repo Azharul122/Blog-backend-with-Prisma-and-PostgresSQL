@@ -3,12 +3,6 @@ import { prisma } from "../../../lib/prisma";
 import { postService } from "./post.service";
 import { getUserFromToken } from "../../utils/getUserFromToken";
 
-interface CreatePostPayload {
-  title: string;
-  content: string;
-  authorId: string;
-  tags?: string[];
-}
 
 const createPost = async (req: Request, res: Response) => {
   console.log("Request body:", req.body);
@@ -96,16 +90,10 @@ const updatePost = async (req: Request, res: Response) => {
 //  .......................... Delete Post ...............................
 const deletePost = async (req: Request, res: Response) => {
   try {
-    const user = getUserFromToken(req.headers.authorization as string, req);
+    const user = getUserFromToken(req.cookies.token as string, req);
 
     if (!user) {
       return res.status(401).json({ error: "User not authenticated" });
-    }
-
-    if (user.role !== "ADMIN") {
-      return res
-        .status(401)
-        .json({ error: "You are not authorized to delete this post" });
     }
 
     const post = await postService.getPostById(req.params.id as string);
@@ -113,13 +101,21 @@ const deletePost = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Post not found" });
     }
 
-    if (post.authorId !== user.id) {
+    if (post.authorId !== user.id && user.role !== "ADMIN") {
       return res
         .status(401)
         .json({ error: "You are not authorized to delete this post" });
     }
 
     const result = await postService.deletePost(req.params.id as string);
+
+    if (post?.deletedAt)
+      return res.status(400).json({
+        error: "Post already deleted",
+        success: false,
+        statusCode: 400,
+      });
+
     res.status(200).json({
       message: "Post deleted successfully",
       success: true,
