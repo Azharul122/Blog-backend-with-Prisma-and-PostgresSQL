@@ -40,9 +40,9 @@ const createPost = async (data: any) => {
 const getAllPosts = async (filters: PostFilters) => {
   const { category, tag, sort, search, published } = filters;
 
-  // ---------- WHERE clause banano ----------
+
   const where: any = {
-    deletedAt: null, // soft-deleted post gula bad
+    deletedAt: null, 
   };
 
   if (published !== undefined) {
@@ -52,14 +52,14 @@ const getAllPosts = async (filters: PostFilters) => {
   if (category && category.length > 0) {
     where.categories = {
       some: {
-        name: { in: category }, // Category model e 'name' field dhore nicchi
+        name: { in: category },
       },
     };
   }
 
   if (tag && tag.length > 0) {
     where.tags = {
-      hasSome: tag, // String[] field e je kono ekta tag match korle
+      hasSome: tag, 
     };
   }
 
@@ -70,7 +70,7 @@ const getAllPosts = async (filters: PostFilters) => {
     ];
   }
 
-  // ---------- ORDER BY clause banano ----------
+
   const orderBy: any[] = [];
 
   if (sort && sort.length > 0) {
@@ -86,7 +86,7 @@ const getAllPosts = async (filters: PostFilters) => {
     orderBy.push({ createdAt: "desc" }); // default sort
   }
 
-  // ---------- Query run korun ----------
+ 
   const posts = await prisma.post.findMany({
     where,
     orderBy,
@@ -98,11 +98,6 @@ const getAllPosts = async (filters: PostFilters) => {
 
   return posts;
 };
-
-// const getAllPosts = async () => {
-//   const posts = await prisma.post.findMany({ include: { author: true } });
-//   return posts;
-// };
 
 // .......................... Single Post ...............................
 const getPostById = async (id: string) => {
