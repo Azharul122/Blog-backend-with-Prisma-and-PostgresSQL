@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
-import { prisma } from "../../../lib/prisma";
 import { postService } from "./post.service";
 import { getUserFromToken } from "../../utils/getUserFromToken";
-
 
 const createPost = async (req: Request, res: Response) => {
   console.log("Request body:", req.body);
@@ -19,13 +17,25 @@ const createPost = async (req: Request, res: Response) => {
 };
 
 //  .......................... Get All Post ...............................
+
 const getAllPosts = async (req: Request, res: Response) => {
   try {
-    const posts = await postService.getAllPosts();
+    const { category, tag, sort, search, published } = req.query;
+
+    const filters = {
+      category: category ? (category as string).split(",") : undefined,
+      tag: tag ? (tag as string).split(",") : undefined,
+      sort: sort ? (sort as string).split(",") : undefined,
+      search: search as string | undefined,
+      published: published !== undefined ? published === "true" : undefined,
+    };
+
+    const result = await postService.getAllPosts(filters);
+
     res.status(200).json({
-      success: true,
       message: "Posts fetched successfully",
-      data: posts,
+      success: true,
+      data: result,
     });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
