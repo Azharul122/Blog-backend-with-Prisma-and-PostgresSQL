@@ -5,6 +5,7 @@ import { authRouter } from "./modules/auth/auth.route";
 import { userRouter } from "./modules/users/user.route";
 import { categoryRouter } from "./modules/category/category.route";
 import { commentRouter } from "./modules/comments/comments.route";
+import { overviewRouter } from "./modules/overview/overview.route";
 
 const app: Application = express();
 app.use(cookieParser());
@@ -15,6 +16,7 @@ app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/category", categoryRouter);
 app.use("/comment", commentRouter);
+app.use("/overview", overviewRouter);
 app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
