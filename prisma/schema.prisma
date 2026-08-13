@@ -142,9 +142,8 @@ model Comment {
 }
 
 enum commentStatus {
-  VISIBLE
-  HIDDEN
-  DELETED
+  APPROVED
+  REJECTED
 }
 
 model Category {

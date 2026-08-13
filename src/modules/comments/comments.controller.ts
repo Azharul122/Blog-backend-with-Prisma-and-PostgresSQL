@@ -102,9 +102,25 @@ const deleteCommentController = async (req: Request, res: Response) => {
   }
 };
 
+// .......................... Hnadle comment status ...............................
+const changeStatus = async (req: Request, res: Response) => {
+  try {
+    const result = await commentService.changeStatus(
+      req.params.id as string,
+      req.body.status as "approve" | "reject",
+    );
+    res
+      .status(200)
+      .json({ message: "Comment status changed successfully", result });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const commentController = {
   createComment,
   getAllComments,
   updateCommentController,
   deleteCommentController,
+  changeStatus  
 };

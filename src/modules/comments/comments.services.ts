@@ -30,7 +30,6 @@ const createComments = async (data: commentsPayload) => {
       throw new Error("Parent comment not found");
     }
 
-  
     if (parentComment.postId !== data.postId) {
       throw new Error("Parent comment does not belong to this post");
     }
@@ -50,7 +49,7 @@ const getAllComments = async (filters: GetCommentsFilters) => {
 
   const [rootComments, total] = await prisma.$transaction([
     prisma.comment.findMany({
-      where: { ...where, parentId: null }, 
+      where: { ...where, parentId: null },
       orderBy: { createdAt: "asc" },
       skip,
       take: limit,
@@ -173,9 +172,30 @@ const getAllReplyIds = async (parentId: string): Promise<string[]> => {
   return allIds;
 };
 
+// .......................... Handle comment status ...............................
+
+const changeStatus = async (id: string, status: "approve" | "reject") => {
+  let isApproved: boolean = false;
+  function validateStatus(status: string) {
+    if (status == "approve") {
+      isApproved = true;
+      return "APPROVED";
+    }
+    if (status == "reject") {
+      return "REJECTED";
+    }
+  }
+  const result = await prisma.comment.update({
+    where: { id },
+    data: { status: validateStatus(status) as any, },
+  });
+  return result;
+};
+
 export const commentService = {
   createComments,
   getAllComments,
   updateComment,
   deleteComment,
+  changeStatus,
 };

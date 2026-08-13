@@ -10,7 +10,7 @@ const prisma = new PrismaClient({
   adapter,
   omit: {
     user: {
-      password: true, // password field globally shob query theke omit hobe
+      password: true, 
     },
   },
 });
