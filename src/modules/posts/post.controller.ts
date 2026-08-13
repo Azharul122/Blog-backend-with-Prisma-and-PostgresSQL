@@ -166,13 +166,41 @@ const approvedPost = async (req: Request, res: Response) => {
   }
 };
 
+// .......................... Publish Post ...............................
+const publishPost = async (req: Request, res: Response) => {
+  try {
+    const result = await postService.publishPost(req.params.id as string);
+    res.status(200).json({
+      message: "Post published successfully",
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// .......................... Get Post By Slug ...............................
+const getPostBySlug = async (req: Request, res: Response) => {
+  try {
+    const result = await postService.getPostBySlug(req.query.slug as string);
+    res.status(200).json({
+      message: "Post fetched successfully",
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const postController = {
   createPost,
   getAllPosts,
   getPostById,
   updatePost,
   deletePost,
-  // getPostBySlug,
-  // publishPost,
+  getPostBySlug,
+  publishPost,
   approvedPost,
 };
