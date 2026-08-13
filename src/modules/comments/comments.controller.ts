@@ -34,9 +34,94 @@ const createComment = async (req: Request, res: Response) => {
   }
 };
 
-const getAllComments = async (req: Request, res: Response) => {};
+const getAllComments = async (req: Request, res: Response) => {
+  try {
+    const comments = await commentService.getAllComments();
+
+    res.status(200).json({
+      success: true,
+      message: "Comments fetched successfully",
+      //   meta,
+      data: comments,
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+const updateCommentController = async (req: Request, res: Response) => {
+  const user = getUserFromToken(req.cookies.token as string, req);
+
+  if (!user) {
+    return res.status(401).json({ error: "User not authenticated" });
+  }
+
+  try {
+    const result = await commentService.updateComment(
+      req.params.id as string,
+      user.id,
+      req.body,
+    );
+
+    res.status(200).json({
+      message: "Comment updated successfully",
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// const deleteCommentController = async (req: Request, res: Response) => {
+//   const user = getUserFromToken(req.cookies.token as string, req);
+
+//   if (!user) {
+//     return res.status(401).json({ error: "User not authenticated" });
+//   }
+
+//   try {
+//     const result = await commentService.deleteComment(
+//       req.params.id as string,
+//       user.id,
+//       user.role
+//     );
+
+//     res.status(200).json({
+//       message: result.message,
+//       success: true,
+//     });
+//   } catch (error: any) {
+//     res.status(400).json({ error: error.message });
+//   }
+// };
+
+const deleteCommentController = async (req: Request, res: Response) => {
+  const user = getUserFromToken(req.cookies.token as string, req);
+
+  if (!user) {
+    return res.status(401).json({ error: "User not authenticated" });
+  }
+
+  try {
+    const result = await commentService.deleteComment(
+      req.params.id as string,
+      user.id,
+      user.role,
+    );
+
+    res.status(200).json({
+      message: result.message,
+      success: true,
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
 
 export const commentController = {
   createComment,
   getAllComments,
+  updateCommentController,
+  deleteCommentController,
 };
