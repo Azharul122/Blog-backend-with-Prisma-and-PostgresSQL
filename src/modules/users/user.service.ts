@@ -1,25 +1,44 @@
 import { prisma } from "../../../lib/prisma";
 import { userEditableFields } from "../../../types/auth";
 import { getUserFromToken } from "../../utils/getUserFromToken";
+import { buildPaginationMeta, getPaginationParams } from "../../utils/pagination";
 
-const getAllUsers = async () => {
-  const users = await prisma.user.findMany({
-    where: { deletedAt: null },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      emailVerified: true,
-      createdAt: true,
-      updatedAt: true,
-      profile: true,
-    },
+interface GetUsersFilters {
+  page?: number;
+  limit?: number;
+}
 
-    orderBy: { createdAt: "desc" },
+const getAllUsers = async (filters: GetUsersFilters) => {
+  const { page, limit, skip } = getPaginationParams({
+    page: filters.page,
+    limit: filters.limit,
   });
 
-  return users;
+  const where = { deletedAt: null };
+
+  const [users, total] = await prisma.$transaction([
+    prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        emailVerified: true,
+        createdAt: true,
+        updatedAt: true,
+        profile: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  const meta = buildPaginationMeta(total, page, limit);
+
+  return { users, meta };
 };
 
 const getUserById = async (id: string) => {

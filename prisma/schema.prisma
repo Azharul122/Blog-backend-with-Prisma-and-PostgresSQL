@@ -129,7 +129,7 @@ model Comment {
   author    User           @relation(fields: [authorId], references: [id])
   authorId  String
   parentId  String?
-  parent    Comment?       @relation("CommentReplies", fields: [parentId], references: [id]) // Self-relation for replies
+  parent    Comment?       @relation("CommentReplies", fields: [parentId], references: [id]) 
   replies   Comment[]      @relation("CommentReplies")
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt

@@ -5,11 +5,14 @@ import { getUserFromToken } from "../../utils/getUserFromToken";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await userService.getAllUsers();
+    const filters = req.query;
+    const users = await userService.getAllUsers(filters);
+    const { meta, users: usersData } = users;
     res.status(200).json({
       success: true,
       message: "Users fetched successfully",
-      data: users,
+      meta,
+      data: usersData,
     });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
