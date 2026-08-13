@@ -11,12 +11,15 @@ const app: Application = express();
 app.use(cookieParser());
 app.use(express.json());
 
-app.use("/post", postRouter);
-app.use("/auth", authRouter);
-app.use("/user", userRouter);
-app.use("/category", categoryRouter);
-app.use("/comment", commentRouter);
-app.use("/overview", overviewRouter);
+const API_PREFIX = "/api/v1";
+
+app.use(`${API_PREFIX}/post`, postRouter);
+app.use(`${API_PREFIX}/auth`, authRouter);
+app.use(`${API_PREFIX}/user`, userRouter);
+app.use(`${API_PREFIX}/category`, categoryRouter);
+app.use(`${API_PREFIX}/comment`, commentRouter);
+app.use(`${API_PREFIX}/overview`, overviewRouter);
+
 app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
