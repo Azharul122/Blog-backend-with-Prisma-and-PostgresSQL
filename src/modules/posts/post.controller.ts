@@ -169,7 +169,10 @@ const approvedPost = async (req: Request, res: Response) => {
 // .......................... Publish Post ...............................
 const publishPost = async (req: Request, res: Response) => {
   try {
-    const result = await postService.publishPost(req.params.id as string);
+    const result = await postService.publishPost(
+      req.params.id as string,
+      req.body.status as any,
+    );
     res.status(200).json({
       message: "Post published successfully",
       success: true,
