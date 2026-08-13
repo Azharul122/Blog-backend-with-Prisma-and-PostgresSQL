@@ -8,5 +8,6 @@ router.put("/update/:id", postController.updatePost);
 router.delete("/delete/:id", postController.deletePost);
 router.get("/all", postController.getAllPosts);
 router.get("/single", postController.getPostById);
+router.put("/approve/:id", postController.approvedPost);
 
 export const postRouter: Router = router;

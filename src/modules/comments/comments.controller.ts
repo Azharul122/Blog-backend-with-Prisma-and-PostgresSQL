@@ -7,7 +7,6 @@ const createComment = async (req: Request, res: Response) => {
   try {
     const token = req.cookies.token as string;
     const user = getUserFromToken(token, req);
-    console.log(user);
     const payload = {
       authorId: user.id as string,
       postId: req.params.id as string,
@@ -35,14 +34,21 @@ const createComment = async (req: Request, res: Response) => {
 };
 
 const getAllComments = async (req: Request, res: Response) => {
+  const { page, limit } = req.query;
+  const filter = {
+    page: page ? parseInt(page as string) : undefined,
+    limit: limit ? parseInt(limit as string) : undefined,
+  };
   try {
-    const comments = await commentService.getAllComments();
+    const comments = await commentService.getAllComments(filter);
+
+    const { meta, comments: data } = comments;
 
     res.status(200).json({
       success: true,
       message: "Comments fetched successfully",
-      //   meta,
-      data: comments,
+      meta,
+      data: data,
     });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
@@ -72,29 +78,6 @@ const updateCommentController = async (req: Request, res: Response) => {
     res.status(400).json({ error: error.message });
   }
 };
-
-// const deleteCommentController = async (req: Request, res: Response) => {
-//   const user = getUserFromToken(req.cookies.token as string, req);
-
-//   if (!user) {
-//     return res.status(401).json({ error: "User not authenticated" });
-//   }
-
-//   try {
-//     const result = await commentService.deleteComment(
-//       req.params.id as string,
-//       user.id,
-//       user.role
-//     );
-
-//     res.status(200).json({
-//       message: result.message,
-//       success: true,
-//     });
-//   } catch (error: any) {
-//     res.status(400).json({ error: error.message });
-//   }
-// };
 
 const deleteCommentController = async (req: Request, res: Response) => {
   const user = getUserFromToken(req.cookies.token as string, req);

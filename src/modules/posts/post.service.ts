@@ -125,12 +125,12 @@ const getAllPosts = async (filters: PostFilters) => {
         categories: true,
       },
     }),
-    prisma.post.count({ where }), 
+    prisma.post.count({ where }),
   ]);
 
   const meta = buildPaginationMeta(total, page, limit);
 
-  return { meta,posts };
+  return { meta, posts };
 };
 
 // .......................... Single Post ...............................
@@ -157,13 +157,39 @@ const deletePost = async (id: string) => {
     data: { deletedAt: new Date() as any },
   });
 
-  // if already deleted then throw error
-
-  // if (post.deletedAt) {
-  //   throw new Error("Post already deleted");
-  // }
-
   return { daletedAt: post.deletedAt };
+};
+
+// .......................... Get Post By Slug ...............................
+const getPostBySlug = async (slug: string) => {
+  const post = await prisma.post.findUnique({ where: { slug } });
+  return post;
+};
+
+// .......................... Publish Post ...............................
+
+const publishPost = async (
+  id: string,
+  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED",
+) => {
+  function published() {
+    return status === "PUBLISHED";
+  }
+
+  const post = await prisma.post.update({
+    where: { id },
+    data: { status, published: published() },
+  });
+  return post;
+};
+
+// aprroved post
+const approvedPost = async (id: string) => {
+  const post = await prisma.post.update({
+    where: { id },
+    data: { approved: true },
+  });
+  return post;
 };
 
 export const postService = {
@@ -172,4 +198,7 @@ export const postService = {
   getPostById,
   updatePost,
   deletePost,
+  getPostBySlug,
+  publishPost,
+  approvedPost,
 };

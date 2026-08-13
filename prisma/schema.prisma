@@ -86,6 +86,7 @@ model Post {
   author     User        @relation(fields: [authorId], references: [id])
   authorId   String
   image      String?
+  approved   Boolean     @default(false)
   slug       String      @unique
   isFeatured Boolean     @default(false)
   video      String?
@@ -96,24 +97,24 @@ model Post {
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   deletedAt  DateTime?
-  status     postStatus?
+  status     PostStatus?
 
   @@index([authorId])
   @@map("posts")
 }
 
-model postStatus {
-  id        String     @id @default(uuid())
-  status    PostStatus @default(DRAFT)
-  post      Post       @relation(fields: [postId], references: [id])
-  postId    String     @unique
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  deletedAt DateTime?
+// model postStatus {
+//   id        String     @id @default(uuid())
+//   status    PostStatus @default(DRAFT)
+//   post      Post       @relation(fields: [postId], references: [id])
+//   postId    String     @unique
+//   createdAt DateTime   @default(now())
+//   updatedAt DateTime   @updatedAt
+//   deletedAt DateTime?
 
-  @@index([postId])
-  @@map("post_statuses")
-}
+//   @@index([postId])
+//   @@map("post_statuses")
+// }
 
 enum PostStatus {
   DRAFT
@@ -129,7 +130,7 @@ model Comment {
   author    User           @relation(fields: [authorId], references: [id])
   authorId  String
   parentId  String?
-  parent    Comment?       @relation("CommentReplies", fields: [parentId], references: [id]) 
+  parent    Comment?       @relation("CommentReplies", fields: [parentId], references: [id])
   replies   Comment[]      @relation("CommentReplies")
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt

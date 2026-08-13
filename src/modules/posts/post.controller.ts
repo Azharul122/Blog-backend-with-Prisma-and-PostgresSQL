@@ -142,10 +142,37 @@ const deletePost = async (req: Request, res: Response) => {
   }
 };
 
+// .......................... Approved Post ...............................
+const approvedPost = async (req: Request, res: Response) => {
+  const user = getUserFromToken(req.cookies.token as string, req);
+
+  if (!user) {
+    return res.status(401).json({ error: "User not authenticated" });
+  }
+
+  // only admin can approve
+  if (user.role !== "ADMIN") {
+    return res.status(401).json({ error: "Only admin can approve post" });
+  }
+  try {
+    const result = await postService.approvedPost(req.params.id as string);
+    res.status(200).json({
+      message: "Post approved successfully",
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const postController = {
   createPost,
   getAllPosts,
   getPostById,
   updatePost,
   deletePost,
+  // getPostBySlug,
+  // publishPost,
+  approvedPost,
 };

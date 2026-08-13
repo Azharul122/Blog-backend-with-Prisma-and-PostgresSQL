@@ -1,4 +1,13 @@
 import { prisma } from "../../../lib/prisma";
+import {
+  getPaginationParams,
+  buildPaginationMeta,
+} from "../../utils/pagination";
+
+interface GetCommentsFilters {
+  page?: number;
+  limit?: number;
+}
 
 interface commentsPayload {
   content: string;
@@ -21,7 +30,7 @@ const createComments = async (data: commentsPayload) => {
       throw new Error("Parent comment not found");
     }
 
-    // Extra safety: parent comment ta ki oi ekoi post er (mismatch prevent korar jonno)
+  
     if (parentComment.postId !== data.postId) {
       throw new Error("Parent comment does not belong to this post");
     }
@@ -31,47 +40,71 @@ const createComments = async (data: commentsPayload) => {
   return result;
 };
 
-const getAllComments = async () => {
-  // Step 1: Database theke SHOB comment ekbar e flat list hishebe anun
-  const allComments = await prisma.comment.findMany({
+const getAllComments = async (filters: GetCommentsFilters) => {
+  const { page, limit, skip } = getPaginationParams({
+    page: filters.page,
+    limit: filters.limit,
+  });
+
+  const where = { deletedAt: null };
+
+  const [rootComments, total] = await prisma.$transaction([
+    prisma.comment.findMany({
+      where: { ...where, parentId: null }, 
+      orderBy: { createdAt: "asc" },
+      skip,
+      take: limit,
+      include: {
+        author: { select: { id: true, name: true } },
+      },
+    }),
+    prisma.comment.count({ where: { ...where, parentId: null } }),
+  ]);
+
+  if (rootComments.length === 0) {
+    return { comments: [], meta: buildPaginationMeta(total, page, limit) };
+  }
+
+  const rootIds = rootComments.map((c) => c.id);
+
+  const allReplies = await prisma.comment.findMany({
     where: {
       deletedAt: null,
+      parentId: { not: null },
     },
+    orderBy: { createdAt: "asc" },
     include: {
       author: { select: { id: true, name: true } },
     },
-    orderBy: { createdAt: "asc" },
   });
 
-  // Step 2: Map banano - id diye quick lookup korar jonno
   const commentMap = new Map<string, any>();
-  const rootComments: any[] = [];
 
-  for (const comment of allComments) {
+  for (const comment of rootComments) {
+    commentMap.set(comment.id, { ...comment, replies: [] });
+  }
+  for (const comment of allReplies) {
     commentMap.set(comment.id, { ...comment, replies: [] });
   }
 
-  // Step 3: Prottek comment ke tar parent er 'replies' e link korun
-  for (const comment of allComments) {
+  for (const comment of allReplies) {
     const current = commentMap.get(comment.id);
-
-    if (comment.parentId) {
-      const parent = commentMap.get(comment.parentId);
-      if (parent) {
-        parent.replies.push(current);
-      }
-    } else {
-      rootComments.push(current);
+    const parent = commentMap.get(comment.parentId as string);
+    if (parent) {
+      parent.replies.push(current);
     }
   }
+  const result = rootIds.map((id) => commentMap.get(id));
 
-  return rootComments;
+  const meta = buildPaginationMeta(total, page, limit);
+
+  return { comments: result, meta };
 };
 
 const updateComment = async (
   commentId: string,
   userId: string,
-  data: UpdateCommentPayload
+  data: UpdateCommentPayload,
 ) => {
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
@@ -93,12 +126,11 @@ const updateComment = async (
   return result;
 };
 
-// export const commentService = {
-//   getAllComments,
-// };
-
-
-const deleteComment = async (commentId: string, userId: string, userRole: string) => {
+const deleteComment = async (
+  commentId: string,
+  userId: string,
+  userRole: string,
+) => {
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
   });
@@ -114,11 +146,9 @@ const deleteComment = async (commentId: string, userId: string, userRole: string
     throw new Error("You are not authorized to delete this comment");
   }
 
-  // Recursive function - ei comment ar tar shob nested reply (jekono depth) er id ber korun
   const idsToDelete = await getAllReplyIds(commentId);
-  idsToDelete.push(commentId); 
+  idsToDelete.push(commentId);
 
-  // Shob ek shathe soft-delete korun
   await prisma.comment.updateMany({
     where: { id: { in: idsToDelete } },
     data: { deletedAt: new Date() },
@@ -136,17 +166,16 @@ const getAllReplyIds = async (parentId: string): Promise<string[]> => {
   let allIds: string[] = directReplies.map((r) => r.id);
 
   for (const reply of directReplies) {
-    const nestedIds = await getAllReplyIds(reply.id); // recursion - jekono depth handle korbe
+    const nestedIds = await getAllReplyIds(reply.id);
     allIds = allIds.concat(nestedIds);
   }
 
   return allIds;
 };
 
-
 export const commentService = {
   createComments,
   getAllComments,
   updateComment,
-  deleteComment
+  deleteComment,
 };

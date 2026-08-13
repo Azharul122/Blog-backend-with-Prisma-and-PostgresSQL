@@ -12,6 +12,7 @@ const register = async (data: {
   phone: string | null;
   address: string | null;
   name: string;
+  role?: "ADMIN" | "USER";
 }) => {
   const result = await prisma.user.create({
     data: {
@@ -20,8 +21,12 @@ const register = async (data: {
       phone: data.phone,
       address: data.address,
       name: data.name,
+      role: data.role,
     },
   });
+
+  
+
   return result;
 };
 

@@ -1,6 +1,5 @@
 import { prisma } from "../../../lib/prisma";
 import { userEditableFields } from "../../../types/auth";
-import { getUserFromToken } from "../../utils/getUserFromToken";
 import { buildPaginationMeta, getPaginationParams } from "../../utils/pagination";
 
 interface GetUsersFilters {
@@ -14,7 +13,7 @@ const getAllUsers = async (filters: GetUsersFilters) => {
     limit: filters.limit,
   });
 
-  const where = { deletedAt: null };
+  const where = { deletedAt: null};
 
   const [users, total] = await prisma.$transaction([
     prisma.user.findMany({
