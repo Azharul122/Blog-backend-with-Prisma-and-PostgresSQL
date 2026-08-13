@@ -12,6 +12,7 @@ const createComment = async (req: Request, res: Response) => {
       authorId: user.id as string,
       postId: req.params.id as string,
       content: req.body.content as string,
+      parentId: req.body.parentId ?? undefined,
     };
 
     if (!user) return res.status(401).json({ error: "User not authenticated" });
@@ -33,6 +34,9 @@ const createComment = async (req: Request, res: Response) => {
   }
 };
 
+const getAllComments = async (req: Request, res: Response) => {};
+
 export const commentController = {
   createComment,
+  getAllComments,
 };
