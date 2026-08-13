@@ -1,6 +1,10 @@
 import { prisma } from "../../../lib/prisma";
 import generateSlug from "../../utils/generateSlag";
 import { PostFilters } from "../../../types/post";
+import {
+  buildPaginationMeta,
+  getPaginationParams,
+} from "../../utils/pagination";
 
 const createPost = async (data: any) => {
   if (!data.authorId) {
@@ -102,19 +106,31 @@ const getAllPosts = async (filters: PostFilters) => {
   }
 
   if (orderBy.length === 0) {
-    orderBy.push({ createdAt: "desc" }); // default sort
+    orderBy.push({ createdAt: "desc" });
   }
 
-  const posts = await prisma.post.findMany({
-    where,
-    orderBy,
-    include: {
-      author: { select: { id: true, name: true, email: true } },
-      categories: true,
-    },
+  const { page, limit, skip } = getPaginationParams({
+    page: filters.page,
+    limit: filters.limit,
   });
 
-  return posts;
+  const [posts, total] = await prisma.$transaction([
+    prisma.post.findMany({
+      where,
+      orderBy,
+      skip,
+      take: limit,
+      include: {
+        author: { select: { id: true, name: true, email: true } },
+        categories: true,
+      },
+    }),
+    prisma.post.count({ where }), 
+  ]);
+
+  const meta = buildPaginationMeta(total, page, limit);
+
+  return { meta,posts };
 };
 
 // .......................... Single Post ...............................

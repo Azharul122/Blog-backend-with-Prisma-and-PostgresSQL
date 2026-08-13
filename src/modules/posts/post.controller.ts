@@ -21,7 +21,7 @@ const createPost = async (req: Request, res: Response) => {
 
 const getAllPosts = async (req: Request, res: Response) => {
   try {
-    const { category, tag, sort, search, published } = req.query;
+    const { category, tag, sort, search, published, page, limit } = req.query;
 
     const filters = {
       category: category ? (category as string).split(",") : undefined,
@@ -29,14 +29,19 @@ const getAllPosts = async (req: Request, res: Response) => {
       sort: sort ? (sort as string).split(",") : undefined,
       search: search as string | undefined,
       published: published !== undefined ? published === "true" : undefined,
+      page: page ? parseInt(page as string) : undefined,
+      limit: limit ? parseInt(limit as string) : undefined,
     };
 
     const result = await postService.getAllPosts(filters);
 
+    const { meta, posts } = result;
+
     res.status(200).json({
       message: "Posts fetched successfully",
       success: true,
-      data: result,
+      meta,
+      data: posts,
     });
   } catch (error: any) {
     res.status(400).json({ error: error.message });

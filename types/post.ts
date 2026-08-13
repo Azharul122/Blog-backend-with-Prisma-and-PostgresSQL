@@ -12,4 +12,6 @@ export interface PostFilters {
   sort?: string[];
   search?: string;
   published?: boolean;
+  page?: number;
+  limit?: number;
 }
