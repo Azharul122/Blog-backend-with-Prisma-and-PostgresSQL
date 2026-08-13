@@ -176,6 +176,7 @@ const getAllReplyIds = async (parentId: string): Promise<string[]> => {
 
 const changeStatus = async (id: string, status: "approve" | "reject") => {
   let isApproved: boolean = false;
+
   function validateStatus(status: string) {
     if (status == "approve") {
       isApproved = true;
@@ -187,7 +188,7 @@ const changeStatus = async (id: string, status: "approve" | "reject") => {
   }
   const result = await prisma.comment.update({
     where: { id },
-    data: { status: validateStatus(status) as any, },
+    data: { status: validateStatus(status) as any },
   });
   return result;
 };

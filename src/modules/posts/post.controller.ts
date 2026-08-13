@@ -1,10 +1,28 @@
 import { Request, Response } from "express";
 import { postService } from "./post.service";
 import { getUserFromToken } from "../../utils/getUserFromToken";
+import checkRestrictedContent from "../../utils/checkRestrictedContent";
+import { authService } from "../auth/auth.service";
+import { transporter } from "../../lib/mailer";
+import { restictedMessageTemplete } from "../../templetes/restictedMessageTemplete";
 
 const createPost = async (req: Request, res: Response) => {
-  console.log("Request body:", req.body);
+  const token = req.cookies.token as string;
+  const user = getUserFromToken(token, req);
+  const email = user?.email as string;
   try {
+    const data = checkRestrictedContent(req.body.content);
+    if (data) {
+      await transporter.sendMail({
+        from: process.env.SMTP_EMAIL,
+        to: email,
+        subject: "Oops we found resticted content in your post",
+        html: restictedMessageTemplete(data),
+      });
+      return  res.status(400).json({ error: data });
+    }
+
+
     const result = await postService.createPost(req.body);
 
     res.status(201).json({
