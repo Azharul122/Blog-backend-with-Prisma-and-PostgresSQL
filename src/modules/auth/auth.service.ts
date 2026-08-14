@@ -5,6 +5,7 @@ import generateOtp from "../../utils/generateOtp";
 import jwt from "jsonwebtoken";
 
 import { sendOtpTypePayload } from "../../../types/auth";
+import { googleClient } from "../../lib/googleClient";
 
 const register = async (data: {
   email: string;
@@ -25,7 +26,7 @@ const register = async (data: {
     },
   });
 
-  
+  // register with google
 
   return result;
 };
@@ -253,14 +254,14 @@ const changePassword = async (data: {
 
 // .......................... Generate Token ...............................
 const generateToken = async (
-  password: string,
+  // password?: string,
   email: string,
   role: string,
   id: string,
   name: string,
 ) => {
   const token = jwt.sign(
-    { password, email, role, id, name },
+    { email, role, id, name },
     `${process.env.JWT_SECRET}`,
     {
       expiresIn: "1d",
@@ -288,6 +289,57 @@ const getAllUsers = async () => {
   return users;
 };
 
+// .......................... Google Auth ...............................
+const authenticateWithGoogle = async (idToken: string) => {
+  if (!idToken) {
+    throw new Error("Google credential missing");
+  }
+
+  const ticket = await googleClient.verifyIdToken({
+    idToken,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  const payload = ticket.getPayload();
+
+  if (!payload || !payload.email) {
+    throw new Error("Invalid Google token");
+  }
+
+  const { email, name, sub: googleId } = payload;
+
+  let user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email,
+        name: name || "No Name",
+        googleId,
+        provider: "google",
+        password: "",
+        phone: null,
+        address: null,
+      },
+    });
+  } else if (!user.googleId) {
+    user = await prisma.user.update({
+      where: { email },
+      data: { googleId, provider: "google" },
+    });
+  }
+
+  const token = generateToken(
+    // user.password as string,
+    user.email,
+    user.role,
+    user.id,
+    user.name as string,
+  );
+
+  return { user, token };
+};
+
 // .......................... Export ...............................
 
 export const authService = {
@@ -303,4 +355,6 @@ export const authService = {
   resetPassword,
   changePassword,
   generateToken,
+  getAllUsers,
+  authenticateWithGoogle,
 };

@@ -12,11 +12,14 @@ const app: Application = express();
 app.use(cookieParser());
 app.use(express.json());
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")  
   .split(",")
   .map((origin) => origin.trim())
-  .filter(Boolean);
-
+  .filter(Boolean);   
+ 
+ 
 app.use(
   cors({
     origin: (origin, callback) => {

@@ -30,7 +30,6 @@ const register = async (req: Request, res: Response) => {
     });
 
     // if admin then
-    
 
     await authService.sendOtp({ email, type: "REGISTER" });
 
@@ -92,7 +91,7 @@ const resetPassword = async (req: Request, res: Response) => {
     }
 
     const generateToken = await authService.generateToken(
-      user.password,
+      // user.password,
       user.email,
       user.role,
       user.id,
@@ -148,7 +147,7 @@ const login = async (req: Request, res: Response) => {
     }
 
     const generatedToken = await authService.generateToken(
-      userByMail.password,
+      // userByMail.password,
       userByMail.email,
       userByMail.role,
       userByMail.id,
@@ -187,7 +186,7 @@ const verifyOtp = async (req: Request, res: Response) => {
     };
 
     const generateTeoken = await authService.generateToken(
-      decreptedPassword?.password,
+      // decreptedPassword?.password,
       userByMail.email,
       userByMail.role,
       userByMail.id,
@@ -293,7 +292,7 @@ const changePasswordVerify = async (req: Request, res: Response) => {
     await authService.changePassword({ email, oldPassword, newPassword });
 
     const generatedToken = await authService.generateToken(
-      newPassword,
+      // newPassword,
       email,
       user.role,
       user.id,
@@ -333,6 +332,24 @@ const changePassword = async (req: Request, res: Response) => {
   }
 };
 
+export const googleAuth = async (req: Request, res: Response) => {
+  try {
+    const { credential } = req.body;
+    const { user, token } =
+      await authService.authenticateWithGoogle(credential);
+
+    tokenSaveToCookie(res, await token);
+    return res.status(200).json({
+      message: "Login successful",
+      success: true,
+      user,
+      token,
+    });
+  } catch (error: any) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 export const authController = {
   login,
   register,
@@ -343,4 +360,5 @@ export const authController = {
   resendOtp,
   changePasswordVerify,
   changePassword,
+  googleAuth,
 };
