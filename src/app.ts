@@ -6,10 +6,34 @@ import { userRouter } from "./modules/users/user.route";
 import { categoryRouter } from "./modules/category/category.route";
 import { commentRouter } from "./modules/comments/comments.route";
 import { overviewRouter } from "./modules/overview/overview.route";
+import cors from "cors";
 
 const app: Application = express();
 app.use(cookieParser());
 app.use(express.json());
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 200,
+  }),
+);
 
 const API_PREFIX = "/api/v1";
 
