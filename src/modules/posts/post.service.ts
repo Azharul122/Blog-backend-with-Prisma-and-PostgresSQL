@@ -37,6 +37,8 @@ const createPost = async (data: any) => {
     throw new Error("Post with this slug already exists.");
   }
 
+  // 
+   
   const postData: any = {
     title: data.title,
     content: data.content,
