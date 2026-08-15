@@ -10,6 +10,7 @@ Backend service built with Node.js, TypeScript, Express, PostgreSQL, and Cloudin
 - Slug-based routing for posts
 - Infinite (nested) comments
 - Auto token storage in cookies — no manual token handling needed on the client
+- Social login(Google)
 - REST API with Express + TypeScript
 - PostgreSQL database
 - Email sending via SMTP (Nodemailer / Gmail App Password)
