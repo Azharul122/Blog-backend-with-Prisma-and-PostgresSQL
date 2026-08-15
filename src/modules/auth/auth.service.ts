@@ -134,7 +134,6 @@ const resendOtp = async ({ email, type }: sendOtpTypePayload) => {
     throw new Error("Email is already verified");
   }
 
-  // Simple resend cooldown check (optional but recommended)
   if (
     user.otpExpiresAt &&
     user.otpExpiresAt > new Date(Date.now() - 4 * 60 * 1000)

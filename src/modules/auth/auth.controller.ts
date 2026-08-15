@@ -257,9 +257,7 @@ const sendOtp = async (req: Request, res: Response) => {
 // .......................... Logout ...............................
 const logout = async (req: Request, res: Response) => {
   try {
-    // Assumption: JWT/token client-side (localStorage ba cookie) e store hoy.
-    // Jodi httpOnly cookie use korchen token-er jonno, eikhane clear korte hobe:
-    res.clearCookie("token"); // apnar cookie naam onujayi adjust korun, na thakle ei line remove korun
+    res.clearCookie("token"); 
 
     res.status(200).json({ message: "Logout successful" });
   } catch (error: any) {
@@ -270,7 +268,6 @@ const logout = async (req: Request, res: Response) => {
 const changePasswordVerify = async (req: Request, res: Response) => {
   try {
     const { email, oldPassword, newPassword } = req.body;
-    // Auth middleware add korle: const userId = req.user.id;
 
     if (!email || !oldPassword || !newPassword) {
       return res.status(400).json({

@@ -21,6 +21,7 @@ async function main() {
             password: hashedPassword,
             name: process.env.ADMIN_NAME as string,
             role: "ADMIN",
+            emailVerified: true
         },
     });
 

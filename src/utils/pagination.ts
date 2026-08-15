@@ -16,14 +16,14 @@ export interface PaginationMeta {
 
 
 export const getPaginationParams = (params: PaginationParams) => {
-  const page = Math.max(1, Number(params.page) || 1);       
-  const limit = Math.min(100, Math.max(1, Number(params.limit) || 10)); 
+  const page = Math.max(1, Number(params.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(params.limit) || 10));
   const skip = (page - 1) * limit;
 
   return { page, limit, skip };
 };
 
-// Total count diye meta object banay (response e pathanor jonno)
+
 export const buildPaginationMeta = (
   total: number,
   page: number,
