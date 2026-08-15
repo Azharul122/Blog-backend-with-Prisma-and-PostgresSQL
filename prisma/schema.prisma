@@ -93,7 +93,7 @@ model Post {
   published Boolean @default(false)
   author    User    @relation(fields: [authorId], references: [id])
   authorId  String
-  image     String?
+  images     File[]
   approved  Boolean @default(false)
 
   slug       String      @unique
@@ -110,6 +110,20 @@ model Post {
 
   @@index([authorId])
   @@map("posts")
+}
+
+model File {
+  id           String   @id @default(uuid())
+  url          String
+  publicId     String   
+  name         String?
+  size         Int?
+  mimeType     String?
+  post         Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId       String?
+  createdAt    DateTime @default(now())
+
+  @@map("files")
 }
 
 // model postStatus {
