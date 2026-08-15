@@ -5,6 +5,7 @@ import {
   buildPaginationMeta,
   getPaginationParams,
 } from "../../utils/pagination";
+import moment from "moment";
 
 const createPost = async (data: any) => {
   if (!data.authorId) {
@@ -38,7 +39,7 @@ const createPost = async (data: any) => {
   }
 
   // 
-   
+
   const postData: any = {
     title: data.title,
     content: data.content,
@@ -83,6 +84,22 @@ const getAllPosts = async (filters: PostFilters) => {
     };
   }
 
+  if (filters.dates && filters.dates.length > 0) {
+    where.OR = filters.dates.map((date) => ({
+      createdAt: {
+        gte: moment(date).startOf("day").toDate(),
+        lte: moment(date).endOf("day").toDate(),
+      },
+    }));
+  }
+
+  if (filters.satartDate && filters.endDate) {
+    where.createdAt = {
+      gte: filters.satartDate,
+      lte: filters.endDate,
+    }
+  }
+
   if (tag && tag.length > 0) {
     where.tags = {
       hasSome: tag,
@@ -104,6 +121,10 @@ const getAllPosts = async (filters: PostFilters) => {
       else if (s === "asc") orderBy.push({ createdAt: "asc" });
       else if (s === "popular") orderBy.push({ reviews: { _count: "desc" } });
       else if (s === "featured") orderBy.push({ isFeatured: "desc" });
+      else if (s === "name") orderBy.push({ name: "desc" });
+      else if (s === "nameAsc") orderBy.push({ name: "asc" });
+      else if (s === "priceAsc") orderBy.push({ price: "asc" });
+      else if (s === "price") orderBy.push({ price: "desc" });
     }
   }
 
