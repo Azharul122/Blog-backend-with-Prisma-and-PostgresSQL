@@ -5,6 +5,7 @@ import checkRestrictedContent from "../../utils/checkRestrictedContent";
 import { authService } from "../auth/auth.service";
 import { transporter } from "../../lib/mailer";
 import { restictedMessageTemplete } from "../../templetes/restictedMessageTemplete";
+import { start } from "node:repl";
 
 const createPost = async (req: Request, res: Response) => {
   const token = req.cookies.token as string;
@@ -19,7 +20,7 @@ const createPost = async (req: Request, res: Response) => {
         subject: "Oops we found resticted content in your post",
         html: restictedMessageTemplete(data),
       });
-      return  res.status(400).json({ error: data });
+      return res.status(400).json({ error: data });
     }
 
 
@@ -49,6 +50,13 @@ const getAllPosts = async (req: Request, res: Response) => {
       published: published !== undefined ? published === "true" : undefined,
       page: page ? parseInt(page as string) : undefined,
       limit: limit ? parseInt(limit as string) : undefined,
+      startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
+      endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
+      dates: req.query.dates
+        ? (req.query.dates as string)
+          .split(",")
+          .map((date) => new Date(date))
+        : undefined,
     };
 
     const result = await postService.getAllPosts(filters);

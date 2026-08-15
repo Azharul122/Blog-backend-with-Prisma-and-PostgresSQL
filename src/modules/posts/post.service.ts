@@ -87,16 +87,18 @@ const getAllPosts = async (filters: PostFilters) => {
   if (filters.dates && filters.dates.length > 0) {
     where.OR = filters.dates.map((date) => ({
       createdAt: {
-        gte: moment(date).startOf("day").toDate(),
-        lte: moment(date).endOf("day").toDate(),
+        gte: moment(date).local().startOf("day").toDate(),
+        lte: moment(date).local().endOf("day").toDate(),
       },
     }));
   }
 
-  if (filters.satartDate && filters.endDate) {
+  if (filters.startDate && filters.endDate) {
     where.createdAt = {
-      gte: filters.satartDate,
-      lte: filters.endDate,
+      // gte: filters.startDate,
+      // lte: filters.endDate,
+      gte: moment(filters.startDate).local().startOf("day").toDate(),
+      lte: moment(filters.endDate).local().endOf("day").toDate(),
     }
   }
 

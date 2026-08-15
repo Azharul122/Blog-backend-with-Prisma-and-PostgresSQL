@@ -7,7 +7,7 @@ export interface Category {
 }
 
 export interface PostFilters {
-  satartDate?: Date;
+  startDate?: Date;
   endDate?: Date;
   dates?: Date[];
   category?: string[];
